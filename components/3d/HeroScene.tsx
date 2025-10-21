@@ -3,9 +3,7 @@
 import { useState, Suspense, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { PerspectiveCamera, Environment } from '@react-three/drei'
-import { EffectComposer, Bloom, ChromaticAberration } from '@react-three/postprocessing'
-import { BlendFunction, ChromaticAberrationEffect } from 'postprocessing'
-import { Vector2 } from 'three'
+import { EffectComposer, Bloom } from '@react-three/postprocessing'
 import ShaderBackground from './ShaderBackground'
 import ParticleField from './ParticleField'
 import FloatingPhone from './FloatingPhone'
@@ -74,14 +72,10 @@ export default function HeroScene() {
           {settings.enablePostProcessing && (
             <EffectComposer>
               <Bloom
-                intensity={0.5}
+                intensity={0.6}
                 luminanceThreshold={0.3}
                 luminanceSmoothing={0.9}
                 mipmapBlur
-              />
-              <ChromaticAberration
-                blendFunction={BlendFunction.NORMAL}
-                offset={new Vector2(0.001, 0.001)}
               />
             </EffectComposer>
           )}

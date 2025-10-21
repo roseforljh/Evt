@@ -226,5 +226,5 @@ MIT License
 
 ---
 
-**Made with ❤️ by EveryTalk Team**
+**Made with ❤️ by Qoney**
 

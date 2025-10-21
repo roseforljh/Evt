@@ -2,12 +2,11 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  output: 'standalone',
   typescript: {
-    ignoreBuildErrors: true, // 跳过类型检查
+    ignoreBuildErrors: true,
   },
   eslint: {
-    ignoreDuringBuilds: true, // 跳过 ESLint 检查
+    ignoreDuringBuilds: true,
   },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',

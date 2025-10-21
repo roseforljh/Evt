@@ -51,6 +51,7 @@ export default function Header() {
                 }}
                 transition={{ type: 'spring', stiffness: 400 }}
               >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
                   src="https://qone.kuz7.com/uploads/images/2025/10/21/1f701dda-11f4-44c4-89f3-541211fe7969.png"
                   alt="EveryTalk Logo"

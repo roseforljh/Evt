@@ -4,7 +4,8 @@ import { useState, Suspense, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { PerspectiveCamera, Environment } from '@react-three/drei'
 import { EffectComposer, Bloom, ChromaticAberration } from '@react-three/postprocessing'
-import { BlendFunction } from 'postprocessing'
+import { BlendFunction, ChromaticAberrationEffect } from 'postprocessing'
+import { Vector2 } from 'three'
 import ShaderBackground from './ShaderBackground'
 import ParticleField from './ParticleField'
 import FloatingPhone from './FloatingPhone'
@@ -80,7 +81,7 @@ export default function HeroScene() {
               />
               <ChromaticAberration
                 blendFunction={BlendFunction.NORMAL}
-                offset={[0.001, 0.001]}
+                offset={new Vector2(0.001, 0.001)}
               />
             </EffectComposer>
           )}

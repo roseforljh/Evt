@@ -41,6 +41,7 @@ export default function Footer() {
           <div className="lg:col-span-2">
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 p-2 backdrop-blur-sm border border-primary/30 shadow-lg shadow-primary/10">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
                   src="https://qone.kuz7.com/uploads/images/2025/10/21/1f701dda-11f4-44c4-89f3-541211fe7969.png"
                   alt="EveryTalk Logo"

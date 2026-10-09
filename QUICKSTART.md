@@ -102,7 +102,7 @@ vercel
 
 ## 📦 依赖说明
 
-- **Next.js 14**: React框架
+- **Next.js 16**: React框架
 - **Three.js**: 3D渲染
 - **Framer Motion**: 动画库
 - **Tailwind CSS**: CSS框架

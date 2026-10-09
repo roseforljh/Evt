@@ -1,58 +1,71 @@
-import type { Metadata } from 'next'
-import { Inter, Poppins } from 'next/font/google'
+import type { Metadata, Viewport } from 'next'
+import { Noto_Sans_SC, Space_Grotesk } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
-import CustomCursor from '@/components/ui/CustomCursor'
-import ScrollProgress from '@/components/ui/ScrollProgress'
-import BackToTop from '@/components/ui/BackToTop'
+import ThemeProvider from '@/components/ui/ThemeProvider'
+import Atmosphere from '@/components/3d/Atmosphere'
+import SmoothScroll from '@/components/ui/SmoothScroll'
+import LanguageProvider, {
+  LocalizedText,
+} from '@/components/ui/LanguageProvider'
 
-const inter = Inter({ 
-  subsets: ['latin'],
-  variable: '--font-inter',
+const notoSans = Noto_Sans_SC({
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-noto',
 })
-
-const poppins = Poppins({ 
+const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800'],
-  variable: '--font-poppins',
+  weight: ['500', '600', '700'],
+  variable: '--font-space',
 })
 
 export const metadata: Metadata = {
-  title: 'EveryTalk - 开源AI聊天助手',
-  description: '高度可定制、功能强大的AI聊天客户端，支持多模型、联网搜索、图像生成，完全开源',
-  keywords: ['EveryTalk', 'Every', 'AI聊天', 'Android', '开源', '多模型', 'ChatGPT', 'Gemini', 'Claude'],
-  authors: [{ name: 'EveryTalk Team' }],
+  metadataBase: new URL('https://www.everytalk.cc'),
+  title: 'EveryTalk — 让对话，自由发生',
+  description:
+    '开源 Android AI 客户端。连接自己的模型，探索聊天、联网搜索、MCP 与图像创作。',
+  keywords: ['EveryTalk', 'AI聊天', 'Android', '开源', '多模型', 'MCP'],
   icons: {
-    icon: 'https://qone.kuz7.com/uploads/images/2025/10/21/1f701dda-11f4-44c4-89f3-541211fe7969.png',
-    apple: 'https://qone.kuz7.com/uploads/images/2025/10/21/1f701dda-11f4-44c4-89f3-541211fe7969.png',
+    // 小尺寸图标放大原企鹅并使用圆角浅底；SVG 优先，PNG 兼容不支持 SVG 的浏览器。
+    icon: [
+      { url: '/favicon-32.png', type: 'image/png', sizes: '32x32' },
+      { url: '/favicon.svg', type: 'image/svg+xml', sizes: 'any' },
+    ],
+    apple: '/everytalk-logo-source.png',
   },
   openGraph: {
-    title: 'EveryTalk - 开源AI聊天助手',
-    description: '高度可定制、功能强大的AI聊天客户端，支持多模型、联网搜索、图像生成',
+    title: 'EveryTalk — 让对话，自由发生',
+    description: '模型由你选择。想法不设边界。',
     type: 'website',
-    url: 'https://github.com/roseforljh/EveryTalk',
+    url: 'https://www.everytalk.cc',
     images: [
       {
-        url: 'https://qone.kuz7.com/uploads/images/2025/10/21/1f701dda-11f4-44c4-89f3-541211fe7969.png',
-        width: 1200,
-        height: 630,
-        alt: 'EveryTalk AI助手',
+        url: '/everytalk-logo-source.png',
+        width: 512,
+        height: 512,
+        alt: 'EveryTalk 像素企鹅',
       },
     ],
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'EveryTalk - 开源AI聊天助手',
-    description: '高度可定制、功能强大的AI聊天客户端',
-    images: ['https://qone.kuz7.com/uploads/images/2025/10/21/1f701dda-11f4-44c4-89f3-541211fe7969.png'],
-  },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
+    card: 'summary',
+    title: 'EveryTalk — 让对话，自由发生',
+    images: ['/everytalk-logo-source.png'],
   },
 }
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#000000' },
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+  ],
+}
+
+// 首次绘制前应用上次主题，避免深浅切换闪屏；禁用存储时自动使用系统偏好。
+const themeScript = `try{var t=localStorage.getItem('everytalk-theme');document.documentElement.dataset.theme=t==='dark'||t==='light'?t:matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'}catch(e){document.documentElement.dataset.theme=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'}`
 
 export default function RootLayout({
   children,
@@ -60,18 +73,29 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="zh-CN" className={`${inter.variable} ${poppins.variable}`}>
-      <body className="font-inter">
-        <ScrollProgress />
-        <CustomCursor />
-        <BackToTop />
-        <Header />
-        <main className="relative z-10">
-          {children}
-        </main>
-        <Footer />
+    <html
+      lang="zh-CN"
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+      className={`${notoSans.variable} ${spaceGrotesk.variable}`}
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body>
+        <ThemeProvider>
+          <LanguageProvider>
+            <a href="#main-content" className="skip-link">
+              <LocalizedText>跳到内容</LocalizedText>
+            </a>
+            <Atmosphere />
+            <SmoothScroll />
+            <Header />
+            <main id="main-content">{children}</main>
+            <Footer />
+          </LanguageProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
 }
-

@@ -1,10 +1,11 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion, type HTMLMotionProps } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { buttonHover } from '@/lib/animations'
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+// 使用动画按钮的官方属性类型，避免原生 DOM 动画事件与 Motion 回调冲突。
+interface ButtonProps extends HTMLMotionProps<'button'> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost'
   size?: 'sm' | 'md' | 'lg'
   children: React.ReactNode
@@ -41,7 +42,7 @@ export default function Button({
       {...props}
     >
       {/* 悬停时的光效 */}
-      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
+      <span className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
       
       {/* 边框发光效果 - 白色模糊 */}
       {variant === 'primary' && (

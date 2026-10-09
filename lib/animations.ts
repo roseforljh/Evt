@@ -1,4 +1,4 @@
-import { Variants } from 'framer-motion'
+import type { TargetAndTransition, Variants } from 'framer-motion'
 
 export const fadeInUp: Variants = {
   initial: {
@@ -98,7 +98,7 @@ export const textReveal: Variants = {
   },
 }
 
-export const cardHover = {
+export const cardHover: TargetAndTransition = {
   scale: 1.05,
   rotateY: 5,
   transition: {
@@ -107,7 +107,7 @@ export const cardHover = {
   },
 }
 
-export const buttonHover = {
+export const buttonHover: TargetAndTransition = {
   scale: 1.05,
   boxShadow: '0 0 30px rgba(99, 102, 241, 0.6)',
   transition: {

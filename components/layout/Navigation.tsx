@@ -18,7 +18,7 @@ export default function Navigation({ isOpen, onClose, navItems }: NavigationProp
         <>
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 md:hidden"
+            className="fixed inset-0 bg-black/80 backdrop-blur-[4px] z-40 md:hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

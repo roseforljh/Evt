@@ -1,6 +1,6 @@
 # EveryTalk - 开源AI聊天助手官网
 
-**EveryTalk** 的官方网站，采用Next.js 14 + Three.js + Framer Motion构建，展示这款高度可定制的开源AI聊天安卓应用。
+**EveryTalk** 的官方网站，采用 Next.js 16 + Three.js + Framer Motion 构建，展示这款高度可定制的开源 AI 聊天安卓应用。
 
 🔗 **GitHub项目地址**: [https://github.com/roseforljh/EveryTalk](https://github.com/roseforljh/EveryTalk)
 
@@ -17,24 +17,25 @@ EveryTalk 是一款功能强大的开源AI聊天客户端，具有以下特点�
 
 ## ✨ 官网特性
 
-- 🎨 **暗色主题设计** - 精心打磨的暗色系配色方案
-- 🚀 **极致性能** - Next.js 14 App Router + SSG静态生成
-- 🎭 **3D视觉效果** - Three.js + React Three Fiber 打造的WebGL场景
-- ✨ **流畅动画** - Framer Motion + GSAP 高性能动画系统
-- 🎯 **粒子特效** - 动态粒子背景 + 自定义着色器
-- 📱 **完全响应式** - 移动端、平板、桌面端完美适配
-- 🎪 **自定义光标** - 跟随光标的粒子轨迹效果
-- ⚡ **性能优化** - 懒加载、代码分割、GPU检测降级
+- 黑白主题：默认跟随系统，支持手动浅色、深色切换。
+- 品牌交互：原始企鹅 Logo 采样为三维像素，待机保持灰白，鼠标局部揭开彩色三维企鹅；拖尾逐渐恢复像素幕，点击产生扩散波纹。
+- 浏览体验：品牌、六个 Dock 入口、太阳与中英文按钮合并到顶部液态玻璃栏；手机在同一个容器内分两排，底部不再占位。桌面滚轮使用 Lenis 轻量惯性，触摸、键盘和减少动画模式保留原生行为。
+- 双语切换：中文与英文文案即时切换，覆盖首页、功能、下载、法律页面与导航提示；刷新、跨页保留选择。截图文字与外部版本名称保持原文。
+- 像素雪背景：采用 React Bits Pixel Snow 源码，按需暂停渲染。
+- 局部滚动动效：React Bits Scroll Expand 展示面板与 Scroll Reveal 标题。
+- 产品展示：五张本地宣传图，可切换与查看完整原图。
+- 无障碍：键盘操作、手机导航、静态 WebGL 回退和减少动画支持。
+- 设计与素材说明：[BLACK_WHITE_REDESIGN.md](./BLACK_WHITE_REDESIGN.md)。
 
 ## 🛠️ 技术栈
 
 ### 核心框架
-- **Next.js 14** - React框架，采用App Router
-- **TypeScript** - 类型安全
-- **React 18** - UI库
+- **Next.js 16.4.0** - React 框架，采用 App Router 和 Turbopack
+- **TypeScript 7.0.2** - 类型安全，使用原生 `tsc` 检查
+- **React 19.3.0** - UI 库
 
 ### 样式
-- **Tailwind CSS** - 原子化CSS框架
+- **Tailwind CSS 4.3.3** - 原子化 CSS 框架，使用 `@tailwindcss/postcss`
 - **自定义暗色主题** - 精心设计的配色系统
 
 ### 3D与动画
@@ -44,6 +45,7 @@ EveryTalk 是一款功能强大的开源AI聊天客户端，具有以下特点�
 - **@react-three/postprocessing** - 后处理效果
 - **Framer Motion** - React动画库
 - **GSAP** - 高性能动画库
+- **Lenis 1.3.26** - 桌面滚轮缓动，与 GSAP ScrollTrigger 同步
 
 ### 特效
 - **react-tsparticles** - 粒子系统
@@ -51,13 +53,19 @@ EveryTalk 是一款功能强大的开源AI聊天客户端，具有以下特点�
 
 ### 图标与字体
 - **Lucide React** - 图标库
-- **Google Fonts (Inter, Poppins)** - 字体
+- **Noto Sans SC、Space Grotesk** - 中文正文与英文品牌字体，通过 `next/font` 构建时下载并自托管
 
 ## 📦 安装
 
-```bash
+需要 Node.js **24.11.0 或更新版本**；本次升级使用 Node.js **26.11.1** 验证。依赖锁定在 `package-lock.json`，安装时使用 `npm ci`。
+
+```powershell
 # 安装依赖
-npm install
+npm ci
+
+# 检查类型和源码
+npm run typecheck
+npm run lint
 
 # 启动开发服务器
 npm run dev
@@ -68,6 +76,10 @@ npm run build
 # 启动生产服务器
 npm start
 ```
+
+2026-10-09 已将直接依赖更新到 npm 的最新稳定版本，具体版本以 `package.json` 为准。ESLint 10 和 TypeScript 7 目前超出 `eslint-config-next` 的部分间接依赖支持范围，因此使用官方 Next.js 插件、Hooks 插件与 Babel 8 解析器；类型校验由 `tsc` 独立执行。已废弃且没有源码引用的 `react-tsparticles`、`tsparticles-engine`、`tsparticles-slim` 已移除。
+
+生产依赖审计为 0 漏洞。完整审计仍报告 `@next/eslint-plugin-next → fast-glob → micromatch → braces` 的开发依赖告警（`GHSA-vfj7-8cjw-p6xm`），上游暂未发布修复版本；未通过强制安装或降级绕过。
 
 ## 📁 项目结构
 

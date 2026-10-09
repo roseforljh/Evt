@@ -1,5 +1,7 @@
 # 部署指南
 
+当前项目需要 Node.js 24.11.0 或更新版本。Vercel 构建使用项目的 `package-lock.json`；部署前运行 `npm run typecheck`、`npm run lint` 和 `npm run build`。
+
 ## 🚀 部署选项
 
 ### 1. Vercel (推荐) ⭐
@@ -130,7 +132,7 @@ sudo systemctl reload nginx
 创建 `Dockerfile`:
 
 ```dockerfile
-FROM node:18-alpine AS base
+FROM node:26-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps

@@ -39,7 +39,7 @@ export default function Card({
       {/* 悬停时的光效 */}
       {hoverable && (
         <div className="absolute inset-0 rounded-2xl opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10" />
+          <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-secondary/10" />
         </div>
       )}
       

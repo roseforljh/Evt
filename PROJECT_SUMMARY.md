@@ -5,7 +5,7 @@
 ### 🎯 核心功能 (100% 完成)
 
 #### 1. 技术框架 ✅
-- **Next.js 14** - 使用最新的App Router
+- **Next.js 16** - 使用 App Router
 - **TypeScript** - 完整的类型安全
 - **Tailwind CSS** - 暗色系主题配置
 - **Three.js + React Three Fiber** - 3D渲染引擎
@@ -326,6 +326,6 @@ npm start
 ---
 
 **开发完成时间**: 2024
-**技术栈**: Next.js 14 + TypeScript + Three.js + Tailwind CSS
+**技术栈**: Next.js 16 + React 19 + TypeScript 7 + Three.js + Tailwind CSS 4
 **项目状态**: ✅ 已完成
 

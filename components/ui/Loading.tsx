@@ -1,8 +1,11 @@
 'use client'
 
+import { useLanguage } from '@/components/ui/LanguageProvider'
+
 import { motion } from 'framer-motion'
 
 export default function Loading() {
+  const { t } = useLanguage()
   return (
     <div className="fixed inset-0 bg-dark-bg flex items-center justify-center z-50">
       <div className="relative">
@@ -20,8 +23,8 @@ export default function Loading() {
           }}
         >
           {/* Front face */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary to-secondary opacity-80 rounded-lg" />
-          
+          <div className="absolute inset-0 bg-linear-to-br from-primary to-secondary opacity-80 rounded-lg" />
+
           {/* Glow effect */}
           <motion.div
             className="absolute inset-0 bg-primary rounded-lg blur-xl"
@@ -43,7 +46,7 @@ export default function Loading() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
         >
-          <p className="text-gray-400 text-sm">加载中...</p>
+          <p className="text-gray-400 text-sm">{t('加载中...')}</p>
         </motion.div>
       </div>
     </div>
@@ -62,4 +65,3 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
     </motion.div>
   )
 }
-

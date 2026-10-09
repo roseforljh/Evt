@@ -1,5 +1,7 @@
 # EveryTalk 官网系统配置要求
 
+当前依赖要求 Node.js 24.11.0 或更新版本，本次升级使用 Node.js 26.11.1 验证。以下容器资源估算为历史说明，不代表新版构建实测结果。
+
 ## 🖥️ 服务器配置要求
 
 ### ⚠️ 最低配置（不推荐，可能卡顿）
@@ -127,7 +129,7 @@ reactStrictMode: false,  // 生产环境可以关闭
 
 #### 最低配置：
 ```
-浏览器: Chrome 90+, Firefox 88+, Safari 14+
+浏览器: Chrome/Edge 111+, Firefox 128+, Safari 16.4+
 内存:   2GB RAM
 GPU:    集成显卡（Intel HD）
 网络:   3G 及以上

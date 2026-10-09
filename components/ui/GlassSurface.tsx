@@ -51,6 +51,7 @@ export interface GlassSurfaceProps {
     | 'plus-lighter'
   className?: string
   style?: CSSProperties
+  lens?: boolean
 }
 
 /** 玻璃只扭曲背景；内容单独叠在上面，不影响文字、按钮和焦点。 */
@@ -75,6 +76,7 @@ const GlassSurface = ({
   mixBlendMode = 'difference',
   className = '',
   style = {},
+  lens = false,
 }: GlassSurfaceProps) => {
   const id = useId().replace(/:/g, '')
   const filterId = `glass-filter-${id}`
@@ -98,6 +100,7 @@ const GlassSurface = ({
     opacity,
     blur,
     mixBlendMode,
+    lens,
   })
   settingsRef.current = {
     borderRadius,
@@ -106,6 +109,7 @@ const GlassSurface = ({
     opacity,
     blur,
     mixBlendMode,
+    lens,
   }
 
   const generateDisplacementMap = (): string => {
@@ -116,11 +120,54 @@ const GlassSurface = ({
       opacity,
       blur,
       mixBlendMode,
+      lens,
     } = settingsRef.current
     const rect = containerRef.current?.getBoundingClientRect()
     const actualWidth = Math.max(1, Math.round(rect?.width || 400))
     const actualHeight = Math.max(1, Math.round(rect?.height || 200))
     const edgeSize = Math.min(actualWidth, actualHeight) * (borderWidth * 0.5)
+
+    if (lens) {
+      // 将圆角表面的法线与 Snell 折射方向编码为 R/G 位移；中心保持中性，弯折集中在厚边。
+      // 映射限制为 384×128，纵向保留足够采样，避免薄顶栏的厚边出现台阶。
+      const map = document.createElement('canvas')
+      map.width = Math.min(actualWidth, 384)
+      map.height = Math.max(1, Math.min(actualHeight, 128))
+      const context = map.getContext('2d')
+      if (context) {
+        const pixels = context.createImageData(map.width, map.height)
+        const radius = Math.min(borderRadius, actualHeight / 2)
+        const rim = Math.min(16, actualHeight * 0.2)
+        const eta = 1 / 1.15
+        for (let y = 0; y < map.height; y++) {
+          for (let x = 0; x < map.width; x++) {
+            const px = (x + 0.5) * actualWidth / map.width - actualWidth / 2
+            const py = (y + 0.5) * actualHeight / map.height - actualHeight / 2
+            const qx = Math.abs(px) - actualWidth / 2 + radius
+            const qy = Math.abs(py) - actualHeight / 2 + radius
+            const ax = Math.max(qx, 0)
+            const ay = Math.max(qy, 0)
+            const length = Math.hypot(ax, ay)
+            const distance = length + Math.min(Math.max(qx, qy), 0) - radius
+            let nx = length ? ax / length : qx > qy ? 1 : 0
+            let ny = length ? ay / length : qy >= qx ? 1 : 0
+            nx *= Math.sign(px)
+            ny *= Math.sign(py)
+            const slope = distance <= 0 ? Math.max(0, 1 + distance / rim) : 0
+            const nz = Math.sqrt(1 - slope * slope)
+            const ray = eta * nz - Math.sqrt(1 - eta * eta * slope * slope)
+            const bend = Math.min(1, -ray * slope * 2)
+            const index = (y * map.width + x) * 4
+            pixels.data[index] = Math.round(128 + nx * bend * 127)
+            pixels.data[index + 1] = Math.round(128 + ny * bend * 127)
+            pixels.data[index + 2] = 128
+            pixels.data[index + 3] = 255
+          }
+        }
+        context.putImageData(pixels, 0, 0)
+        return map.toDataURL()
+      }
+    }
 
     const svgContent = `
       <svg viewBox="0 0 ${actualWidth} ${actualHeight}" xmlns="http://www.w3.org/2000/svg">
@@ -179,6 +226,7 @@ const GlassSurface = ({
     xChannel,
     yChannel,
     mixBlendMode,
+    lens,
   ])
 
   useEffect(() => {
@@ -203,7 +251,7 @@ const GlassSurface = ({
   }, [])
 
   useEffect(() => {
-    // 沿用官方兼容判断：Safari / Firefox 使用 CSS 磨砂回退。
+    // 静态镜片折射不依赖鼠标，手机和减少动画模式仍可使用；同位移时下方仅绘制一次。
     setSvgSupported(supportsSVGFilters())
     // filterId 来自 useId，在组件生命周期内保持不变。
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -269,6 +317,9 @@ const GlassSurface = ({
               result="map"
             />
 
+            {redOffset === greenOffset && greenOffset === blueOffset ? (
+              <feDisplacementMap ref={redChannelRef} in="SourceGraphic" in2="map" result="output" />
+            ) : <>
             <feDisplacementMap
               ref={redChannelRef}
               in="SourceGraphic"
@@ -319,6 +370,7 @@ const GlassSurface = ({
 
             <feBlend in="red" in2="green" mode="screen" result="rg" />
             <feBlend in="rg" in2="blue" mode="screen" result="output" />
+            </>}
             <feGaussianBlur
               ref={gaussianBlurRef}
               in="output"

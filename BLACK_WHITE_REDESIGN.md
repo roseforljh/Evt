@@ -1,12 +1,20 @@
 # EveryTalk 官网：像素企鹅与黑白动效设计
 
-> 更新：2026-10-09。已实现本地版本，尚未部署。
+> 更新：2026-10-09。正式版已上线 https://www.everytalk.cc/；本轮居中首屏、Depth Text、放大的左侧企鹅、镜面分类按钮、形变切图、Fluid Glass 顶栏与性能优化已在本地完成，尚未发布。
 > 官网工程：`C:/Users/33039/Desktop/KunK/Evt`。
 > 本文替代之前的静态黑白方案，以最新的像素交互需求为准。
 
+## 正式上线记录
+
+- 正式部署：`dpl_56LLWmTTReyQyT4WnTSkLnhQd6FL`，Vercel 项目 `kkkunzs-projects/evt`，状态 READY。
+- 发布代码：本地提交 `a78f48a`，未推送 GitHub；云端构建通过后已执行 promote。
+- 线上验收：首页、功能、下载、隐私政策、服务条款均返回 200；中英文实时切换、刷新与跨页记忆、深浅主题切换均通过。
+- 320px 手机视口下两种语言均无横向溢出；顶部玻璃 Dock 正常，底部 Dock 已移除；本次浏览器检查未发现脚本错误或 HTTP 资源错误，部署错误日志查询为空。
+- 下文各轮验收中“尚未部署”描述当时的本地状态，当前上线状态以本节为准。
+
 ## 设计方向
 
-官网面向希望在 Android 上自由连接模型、使用搜索与多模态能力的用户。页面首先说明产品，再引导下载。视觉记忆点是一只由细小三维方块组成的企鹅：它是品牌标记，和主标题并列出现。
+官网面向希望在 Android 上自由连接模型、使用搜索与多模态能力的用户。页面首先说明产品，再引导下载。首屏以居中的标题为重点；三维像素企鹅放在标题左侧，作为可交互的品牌标记，不改变文案中轴，也不再为它单独撑高页面。
 
 黑色主视觉、白色信息层、灰度边框与克制留白。浅色模式反转背景与信息颜色。首屏三维像素企鹅的待机像素幕保持灰白，鼠标揭幕后显示红、橙、黄、绿、青、蓝、紫的七彩渐变；技术栈滚动区的 Logo 保留各项目官方品牌色，作为局部彩色点缀；单色标识根据主题反转。用户宣传图在页面内以灰度显示，完整原图入口保留原始颜色。
 
@@ -18,16 +26,16 @@
 | 展示表面 | #0C0C0C | #F6F6F6 |
 | 分隔线   | #292929 | #DEDEDE |
 
-标题与中文正文使用 Noto Sans SC，英文品牌和技术标签使用 Space Grotesk，功能标签保留系统等宽字体。通过现有 `next/font` 在构建时下载并自托管字体，不新增字体包。
+中文展示标题改用基于「得意黑」v2.0.1 精简的窄斜几何黑体，衍生字体命名为 EveryTalk Display；英文展示标题保留 Caveat。正文使用 Noto Sans SC，英文品牌和技术标签使用 Space Grotesk，功能标签保留系统等宽字体。展示字体只保留当前需要的字形，两份 WOFF2 合计 50,592 字节，位于 `public/fonts/` 并随官网托管，许可证同时保留。旧行书字体已移除。正文与品牌字体继续由现有 `next/font` 在构建时下载并自托管，不新增项目依赖。
 
 ## 页面结构
 
 ```text
 顶部液态玻璃：EveryTalk. / 首页 功能 技术 体验 下载 源码 / 太阳 EN
 ────────────────────────────────────────────────────────────────
-让对话，                             三维像素企鹅
-自由发生.                           局部揭幕，拖尾恢复
-说明 / 下载 / 源码                   像素揭幕
+左侧像素企鹅      让对话，自由发生.（几何黑体、Depth Text、一行居中）
+                  说明 / 胶囊下载与源码按钮 / 产品信息
+像素揭幕
 ────────────────────────────────────────────────────────────────
 一个入口，更多可能。                模型 / 搜索 MCP / 图像 / 排版
 OpenAI / Gemini / Claude → 企鹅 Logo → MCP / 搜索 / 图像生成
@@ -40,9 +48,148 @@ GitHub / 隐私政策 / 服务条款 / MIT
 
 首页使用单页锚点滚动；保留 `/features`、`/download` 与法律页面，所有页面共用主题、导航和背景。
 
+### 本轮首屏与流畅度优化
+
+- `components/sections/Hero.tsx`、`app/globals.css`、`lib/translations.ts`：取消标题和说明的强制换行；文案始终居中。首屏下载与源码按钮使用同高度圆角胶囊、白色主按钮与描边次按钮，仅用已有 Lucide 图标和 CSS，不影响下载区的按钮。企鹅现位于实际标题左侧，画布中心与标题中心对齐；桌面画布最大 320×248，相比上一轮 260×200 再放大约 23%，平板随可用空间缩小。手机画布为 128×114，位于标题上方的左侧，与右侧眉题共享区域。位置依靠现有 CSS，延迟加载不改变文案中轴；同步 `PixelPenguin.tsx` 的回退图尺寸声明。1440×960 首屏仍为 760px，320px 手机约 633px，不再在文案下方留整排企鹅空间。
+- `components/3d/PixelPenguin.tsx`：取消待机持续旋转，缓存真实三维纹理，只有模型、尺寸与主题变化时重画模型；鼠标笔刷与波纹复用纹理。静止时不绘制，轨迹完全恢复后停止循环。
+- `components/3d/PixelSnow.tsx`：保持原组件的着色器，绘制尺寸限制在 480×320 以内；1440×960 视口实测由 936×624 降为 480×320，绘制像素量降低约 74%。这是绘制工作量的变化，不等同于真实设备帧率提升比例。
+- `components/sections/Showcase.tsx`、`public/showcase/*.webp`：展示改用 800px 宽 WebP，五张预览分别约 31–60 KB，比原 PNG 缩小约 96–98%；查看完整图仍打开原 PNG。原图未覆盖。`components/ui/HoloCard.tsx` 将光箔画布像素倍率限制为 1.5。
+- `components/ui/GlassSurface.tsx`、`components/ui/SmoothScroll.tsx`：触摸设备复用已有磨砂玻璃回退、使用原生滚动；桌面保留折射和 Lenis。系统偏好变化时及时切换并清理监听。
+- `components/ui/ScrollReveal.tsx`：英文按词渐显，保留词内手写字形连接；去掉逐字模糊动画，继续使用透明度、位移和滚动缓动。
+- 字体来源：[得意黑 v2.0.1](https://github.com/atelier-anchor/smiley-sans/releases/tag/v2.0.1) 与 Google Fonts 的 [Caveat](https://fonts.google.com/specimen/Caveat)。`public/fonts/everytalk-display.woff2` 仅 10,808 字节；精简通过临时 FontTools 工具环境完成，没有向项目添加依赖。衍生字体的内部家族与 PostScript 名称已改为 EveryTalk Display，避免使用原字体保留名称。对应 `*-OFL.txt` 保留各自的 SIL Open Font License 1.1 全文。新增标题需要同步精简字体的字形集合。
+- 验证：Lint、类型检查、生产构建、diff 检查通过；生产预览实测企鹅待机每秒 0 次绘制，悬停出现彩色、离开恢复灰白。中英文展示字体正常加载；两种语言各检查 320、390、700、768、1024、1440、1920px 七种宽度，页面无溢出、文案中轴居中、按钮文字单行且同高度、企鹅与标题和按钮无重叠。两种主题、触摸设备玻璃回退和原生滚动、减少动画、五张预览图和原图入口、跨页锚点均通过。下载锚点在桌面页面末尾按最大可滚动距离定位，保持下载区可见且不被顶栏遮挡；手机对齐 144px。未发现应用脚本或本站 HTTP 资源错误。
+- 左侧放大调整单独验收：Lint、类型检查、diff 检查与下方自检通过。开发预览检查两种语言各七种宽度，标题保持居中、企鹅位于左侧、画布中心与桌面标题中心对齐，未遮挡标题或按钮；手机眉题位于企鹅右侧。深浅主题截图已核对。企鹅截图彩色像素计数为待机 0、悬停 1594、离开恢复后 0，待机仍停止绘制。本次仅调整布局，未重新发布。
+
+下面的 PowerShell 自检复用已有 Playwright，可在 43187 本地预览运行，检查本次绘制边界和待机停绘，不创建测试文件：
+
+```powershell
+@'
+const assert = require('node:assert/strict');
+const { chromium } = require('C:/Users/33039/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+(async () => {
+  const browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  try {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 960 } });
+    await page.addInitScript(() => {
+      const proto = WebGL2RenderingContext.prototype;
+      for (const name of ['drawArrays', 'drawElements', 'drawArraysInstanced', 'drawElementsInstanced']) {
+        const original = proto[name];
+        proto[name] = function (...args) {
+          this.canvas.dataset.draws = String(Number(this.canvas.dataset.draws || 0) + 1);
+          return original.apply(this, args);
+        };
+      }
+    });
+    await page.goto('http://127.0.0.1:43187/', { waitUntil: 'networkidle' });
+    await page.waitForFunction(() => document.querySelector('.penguin-canvas')?.dataset.ready === 'true');
+    assert.equal(await page.locator('#hero-title br').count(), 0);
+    await page.evaluate(() => document.fonts.ready);
+    assert(await page.evaluate(() => document.fonts.check('400 100px "EveryTalk Display"')));
+    assert(await page.evaluate(() => {
+      const copy = document.querySelector('.hero-copy').getBoundingClientRect();
+      const title = document.querySelector('#hero-title').getBoundingClientRect();
+      const mark = document.querySelector('.hero-visual').getBoundingClientRect();
+      const penguin = document.querySelector('.penguin-canvas').getBoundingClientRect();
+      const buttons = [...document.querySelectorAll('.hero-cta')].map(button => button.getBoundingClientRect());
+      return Math.abs(copy.left + copy.width / 2 - innerWidth / 2) < 1 &&
+        mark.right <= title.left - 12 && mark.left >= 0 &&
+        Math.abs(penguin.top + penguin.height / 2 - title.top - title.height / 2) < 1 &&
+        buttons.every(button => button.height >= 44) &&
+        Math.abs(buttons[0].height - buttons[1].height) < 1;
+    }));
+    const size = await page.locator('.pixel-snow canvas').evaluate(canvas => [canvas.width, canvas.height]);
+    assert(size[0] <= 480 && size[1] <= 320);
+    const canvas = page.locator('.penguin-canvas canvas');
+    // 初始排版可能经过浏览器默认指针位置；移出画布并等待轨迹收敛后检查待机。
+    await page.mouse.move(1, 1);
+    await page.waitForTimeout(2200);
+    const before = await canvas.getAttribute('data-draws');
+    await page.waitForTimeout(1000);
+    assert.equal(await canvas.getAttribute('data-draws'), before);
+    assert.equal((await page.request.get('http://127.0.0.1:43187/showcase/models.webp')).status(), 200);
+    console.log('PASS: centered heading, snow pixel budget, idle penguin and compressed preview');
+  } finally { await browser.close(); }
+})().catch(error => { console.error(error); process.exitCode = 1; });
+'@ | node
+```
+
 公共产品区块采用随视口伸展的容器，去掉原来的 1280px 宽度上限。桌面两侧总间距为 `clamp(64px, 6vw, 160px)`：1920px 屏幕每侧约 58px，2560px 屏幕每侧约 77px。1050px 及以下仍保持每侧 32px，700px 及以下每侧 20px；法律正文保留适合阅读的原有宽度。页头独立为最大 1000px 的顶部玻璃 Dock，不沿用正文宽度。
 
 宽屏更新验证：浏览器测量 320–3440px 的 11 种视口宽度，确认公共区块对齐、边距符合上述规则、页面无横向溢出且 Dock 完整可见。已核对深浅主题截图，功能页与下载页在 390px、1920px 下无溢出；无应用 JavaScript 错误。`bun run build` 与 `git diff --check` 通过。
+
+### 镜面分类按钮、形变切图与首屏厚度文字
+
+- 已读取官方 [Specular Button 注册表](https://reactbits.dev/r/SpecularButton-TS-CSS.json)、[Morph Slider 注册表](https://reactbits.dev/r/MorphSlider-TS-CSS.json)、[Depth Text 注册表](https://reactbits.dev/r/DepthText-TS-CSS.json)及完整源码。官方 CLI 可通过 `bunx shadcn@latest add https://reactbits.dev/r/SpecularButton-TS-CSS.json` 获取按钮，其它两项使用对应注册表地址；按钮和滑块原版依赖 OGL，滑块还依赖 GSAP。本站已具备 Three.js 与 GSAP，因此直接适配原 GLSL 和算法，没有新增依赖，也没有自动安装 CLI 或生成无关文件。
+- `components/ui/SpecularButton.tsx`：沿用 [Specular Button](https://reactbits.dev/components/specular-button) 的圆角 SDF、对称边缘高光、指针角度与指数缓动。只替换圈出的五个分类按钮。按悬停或键盘焦点创建画布，鼠标移开并收敛后停绘；静态边框、选中状态、44px 以上触摸区域与键盘焦点始终保留。颜色跟随黑白主题。
+- `components/ui/MorphSlider.tsx`、`components/ui/morph-slider-shaders.ts`：使用 [Morph Slider](https://reactbits.dev/components/morph-slider) 的官方 melt 形变算法，0.85 秒缓入缓出。分类、前后箭头、键盘左右键和横向滑动共用当前索引；支持直接跳到五项中的任意一项。连续选择时保留最后一次目标并等待当前形变完成。只在切换期间绘制；五张压缩纹理接近视口时加载，像素倍率上限 1.25，关闭自动播放、待机漂移与彩色色散。
+- `components/sections/Showcase.tsx`：形变层在过渡期间覆盖已有 HoloCard，结束后恢复光箔卡片；原 PNG 完整图入口保留。文字使用已有 Framer Motion 淡入和短距离位移。减少动画、纹理加载失败或 WebGL 不可用时依然能查看和切换静态图片；手机纵向手势继续滚动页面。
+- `components/ui/DepthText.tsx`、`components/sections/Hero.tsx`：[Depth Text](https://reactbits.dev/text-animations/depth-text) 只用于首屏主标题。沿用官方多层挤出、二次颜色混合与指针倾斜，用 20 层黑白灰形成厚度；中文几何字体与英文 Caveat 保留。关闭自动环绕，已有 GSAP 在指针停止后结束缓动；触摸设备保持静态角度，减少动画时取消倾斜。装饰层对读屏隐藏，标题不会被重复朗读。
+- `app/globals.css`、`components/3d/PixelPenguin.tsx`：企鹅继续位于标题左侧，桌面最大 320×248、手机 128×114；同步回退图尺寸。待机灰白、悬停七彩、离开恢复与停绘逻辑保持。
+- 验证：Lint、类型检查、生产构建与 diff 检查通过。中英文各检查 320、390、700、768、1024、1051、1200、1440、1920px，无横向溢出、企鹅与标题及操作按钮无重叠。实际浏览器已验证形变着色器绘制、直接跳转、连续选择、键盘循环、文案与原图链接同步、动态减少动画以及按钮和滑块闲置停绘；模拟真实触摸序列验证了横向滑动切图与纵向原生滚动。WebGL 上下文丢失后静态图片仍可切换。深色中文桌面和手机、浅色英文桌面截图已核对；未出现应用脚本或着色器错误。尚未提交、推送或部署。
+
+下面的自检复用工作机已有 Playwright，检查真实形变与连续切换，不创建测试文件：
+
+```powershell
+@'
+const assert = require('node:assert/strict');
+const { chromium } = require('C:/Users/33039/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+(async () => {
+  const browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  try {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 960 }, colorScheme: 'dark' });
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+    await page.addInitScript(() => {
+      const proto = WebGL2RenderingContext.prototype;
+      for (const name of ['drawArrays', 'drawElements', 'drawArraysInstanced', 'drawElementsInstanced']) {
+        const original = proto[name];
+        proto[name] = function (...args) {
+          this.canvas.dataset.draws = String(Number(this.canvas.dataset.draws || 0) + 1);
+          return original.apply(this, args);
+        };
+      }
+    });
+    await page.goto('http://127.0.0.1:43187/', { waitUntil: 'networkidle' });
+    assert.equal(await page.locator('.depth-text__layer').count(), 20);
+    assert.equal(await page.getByRole('heading', { name: '让对话，自由发生.', exact: true }).count(), 1);
+    const stage = page.locator('.depth-text__stage');
+    const beforeTilt = await stage.evaluate(element => getComputedStyle(element).transform);
+    await page.locator('.depth-text').hover({ position: { x: 30, y: 30 } });
+    await page.waitForTimeout(600);
+    assert.notEqual(await stage.evaluate(element => getComputedStyle(element).transform), beforeTilt);
+    await page.locator('.showcase-panel').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(1400);
+    const tabs = page.locator('.showcase-tabs button');
+    await tabs.nth(1).click();
+    await page.waitForTimeout(250);
+    assert.equal(await page.locator('.morph-slider').getAttribute('data-transitioning'), 'true');
+    await page.waitForTimeout(1000);
+    await tabs.nth(4).click();
+    await tabs.nth(2).click();
+    await tabs.nth(3).click();
+    await page.waitForTimeout(2000);
+    assert.equal(await tabs.nth(3).getAttribute('aria-pressed'), 'true');
+    assert.match(await page.locator('.showcase-story').innerText(), /工具能力/);
+    assert.match(await page.locator('.morph-slider img').getAttribute('src'), /tools/);
+    assert.equal(await page.locator('.morph-slider').getAttribute('data-transitioning'), null);
+    await page.mouse.move(1, 1);
+    await page.waitForTimeout(1700);
+    const counts = () => page.locator('.specular-button canvas, .morph-slider-canvas').evaluateAll(canvases => canvases.map(canvas => canvas.dataset.draws || '0'));
+    const before = await counts();
+    await page.waitForTimeout(600);
+    assert.deepEqual(await counts(), before);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await tabs.nth(2).click();
+    await page.waitForTimeout(400);
+    assert.equal(await page.locator('.morph-slider').getAttribute('data-transitioning'), null);
+    assert.match(await page.locator('.showcase-story a').getAttribute('href'), /markdown.png/);
+    assert.deepEqual(errors, []);
+    console.log('PASS: accessible depth text, pointer tilt, melt transition, rapid selection, idle stop and reduced motion');
+  } finally { await browser.close(); }
+})().catch(error => { console.error(error); process.exitCode = 1; });
+'@ | node
+```
 
 ### 悬浮胶囊导航、滚动与字体
 
@@ -260,6 +407,14 @@ Logo 更新验证：17 个原始条目及 68 个循环图标全部加载成功�
 - `app/globals.css`：银黑色边缘、阴影、内容层级、文字对比度与兼容样式。源码许可沿用本文末尾的 React Bits 许可全文。
 - 验证：类型检查、Lint、生产构建通过。Chromium 下以开启/关闭滤镜的截图差异确认实际折射生效；Dock 放大后的映射尺寸、鼠标/键盘标签、导航和跨页面锚点均通过。深浅主题和实例 ID 唯一性通过，无横向溢出或 JavaScript 错误。Safari UA 模拟验证了磨砂回退与手动主题；此项是兼容分支模拟，并非 Safari 引擎测试。生产 CSS 已检查保留标准模糊回退属性。
 
+### Fluid Glass 顶栏曲面
+
+- 来源：[React Bits Fluid Glass](https://reactbits.dev/components/fluid-glass) 与[官方注册表](https://reactbits.dev/r/FluidGlass-TS-CSS.json)。官方示例使用 `three`、`@react-three/fiber`、`@react-three/drei` 和 `maath`；本站已有 Three.js、Fiber 和 Drei，直接复用现有依赖，没有增加新包。
+- `components/ui/FluidGlass.tsx`：采用官方 Bar 模型、`MeshTransmissionMaterial` 透射材质、FBO 离屏缓冲、折射率、厚度和环境反射思路；演示页的远程图片、3D 导航文字和整页 ScrollControls 没有带入官网。棚灯环境在本地生成黑白 DataTexture，模型文件保存为 `public/fluid-glass-bar.glb`，不依赖外部资源。
+- `components/layout/Header.tsx`：Fluid Glass 作为顶部 Dock 的三维曲面层，品牌、导航、太阳和语言按钮继续留在清晰的 HTML 层。`components/ui/GlassSurface.tsx` 继续折射真实页面背景，并改用镜片法线生成 R/G 位移图；原来的 Dock 隔离层和负 z-index 已移除，否则背景滤镜只能采样空容器，视觉上会退化成普通透明。
+- `app/globals.css`：增加三维曲面容器、厚边高光、内侧反射和兼容回退；黑白主题不使用蓝紫或金色。桌面与手机均显示曲面轮廓；鼠标移动时反射方向缓动，离开后收敛停绘。减少动画、触摸设备、WebGL 不可用或上下文丢失时保留 SVG 液态玻璃和完整导航。
+- 验证：桌面 1440px、手机 390px 实测模型 Canvas 和 SVG 折射层均存在；用高对比底纹对比开启/关闭滤镜，记录到 829 个像素变化，确认是实际背景折射，不是单纯透明底。指针反光能触发并停绘，深浅主题、导航焦点、锚点、语言切换、减少动画、手机触摸与 WebGL 上下文丢失回退通过。Lint、类型检查、生产构建和 diff 检查通过。尚未提交、推送或部署。
+
 ## 主题交互
 
 初次进入跟随 `prefers-color-scheme`，未手动选择时继续响应系统主题变动。顶部主题入口为一个太阳图标，旁边是独立语言按钮；通过当前语言的 `aria-label` 与提示文字说明将切换的主题。新主题从按钮中心圆形扩散，默认持续 400ms。手动选择保存在本地。首次绘制前读取主题，减少闪屏。浏览器禁止本地存储时，本次访问仍可切换主题。
@@ -331,7 +486,7 @@ Logo 更新验证：17 个原始条目及 68 个循环图标全部加载成功�
 | app/features/page.tsx                                            | 复用能力与产品展示，保留功能页地址           |
 | app/download/page.tsx                                            | 复用下载区并显示版本记录                     |
 | app/privacy-policy/page.tsx、app/terms-of-service/page.tsx       | 接入法律页主题样式，正文不变                 |
-| components/layout/Header.tsx                                     | 品牌、六个入口、主题与语言的顶部玻璃 Dock   |
+| components/layout/Header.tsx                                     | 品牌、六个入口、主题与语言的顶部玻璃 Dock；滚动时隐藏中间入口 |
 | components/layout/Footer.tsx                                     | 真实项目链接、法律页面与开源协议入口         |
 | components/sections/Hero.tsx                                     | 首屏标题、下载入口与品牌视觉布局             |
 | components/sections/Features.tsx                                 | 四组有依据的能力说明                         |
@@ -349,10 +504,17 @@ Logo 更新验证：17 个原始条目及 68 个循环图标全部加载成功�
 | components/ui/AnimatedThemeToggler.tsx                           | Magic UI 圆形扩散主题切换与兼容回退         |
 | components/ui/GlassSurface.tsx                                  | Dock 的 SVG 玻璃折射和磨砂回退              |
 | components/ui/HoloCard.tsx、components/ui/holo-card-shaders.ts    | React Bits 截图光箔卡片、倾斜与图片回退     |
+| components/ui/SpecularButton.tsx                               | 展示分类的镜面边缘高光，交互结束停绘       |
+| components/ui/MorphSlider.tsx、components/ui/morph-slider-shaders.ts | 官方形变切图、索引同步、键盘与触摸、静态回退 |
+| components/ui/DepthText.tsx                                    | 首屏标题的黑白厚度层和按需指针倾斜         |
 | components/3d/ElasticMesh.tsx、components/3d/elastic-mesh-physics.ts、components/3d/elastic-mesh-shaders.ts | 下载区弹性网格、物理计算和主题渲染 |
 | components/3d/elastic-mesh-physics.test.ts                        | Bun 可运行的网格物理自检                   |
 | components/ui/ScrollExpand.tsx、components/ui/ScrollReveal.tsx   | 宣传区展开与标题滚动显现                     |
 | components/ui/SmoothScroll.tsx                                  | Lenis 桌面滚轮缓动、锚点偏移和减少动画清理   |
+| lib/feature-details.ts                                           | 四项功能对应的真实 Android 源码片段与双语讲解 |
+| components/ui/CodeBlock.tsx                                     | 行号、轻量语法高亮、复制按钮和源码可访问性   |
+| components/sections/FeatureDetail.tsx、app/features/[slug]/page.tsx | 四个功能详情路由、顶部进入、历史位置返回与双语内容 |
+| app/features/[slug]/loading.tsx                                  | 详情路由的源码加载动画                       |
 | package.json、package-lock.json                                  | Lenis 依赖版本与现有依赖锁定                 |
 | public/showcase/\*.png、public/everytalk-logo-source.png         | 本地宣传素材与新 Logo                        |
 | next.config.js                                                   | 禁用预览时自动生成额外 AGENTS 文件           |
@@ -372,6 +534,17 @@ Logo 更新验证：17 个原始条目及 68 个循环图标全部加载成功�
 - 未发现应用 JavaScript 或 WebGL shader 错误；故意注入的 403 资源报错为回退测试预期。
 - `git diff --check` 通过。生产构建保留原有 Tailwind 配置的模块格式提示，不影响构建产物。
 - 尚未部署、提交或推送；后续真实截图和录屏清单见上文。
+
+## 功能源码详情页
+
+功能区四张卡现在分别跳转到以下详情路由：
+
+- `/features/multi-model`
+- `/features/search-mcp`
+- `/features/image-generation`
+- `/features/read-organize`
+
+详情页引用 Android 工程中的模型配置、MCP 配置、图像直连和会话持久化片段，提供行号、Kotlin 语法高亮、复制按钮和中英文讲解。源码块只展示必要片段，不包含 API 密钥或无关实现。
 
 ## React Bits 许可全文
 

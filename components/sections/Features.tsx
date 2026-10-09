@@ -2,6 +2,7 @@
 
 import { useLanguage } from '@/components/ui/LanguageProvider'
 
+import { useEffect } from 'react'
 import {
   ArrowUpRight,
   SlidersHorizontal,
@@ -11,12 +12,14 @@ import {
 } from 'lucide-react'
 import ScrollReveal from '@/components/ui/ScrollReveal'
 import ModelConnections from '@/components/sections/ModelConnections'
+import Link from 'next/link'
 
 const capabilities = [
   {
     icon: SlidersHorizontal,
     title: '模型，自己选。',
     label: 'MULTI-MODEL',
+    slug: 'multi-model',
     description:
       '连接 OpenAI、Gemini、Claude 与兼容接口。服务地址、模型和参数，由你设置。',
     tags: ['自由接入', '参数控制'],
@@ -25,6 +28,7 @@ const capabilities = [
     icon: Globe,
     title: '对话，连接世界。',
     label: 'SEARCH & MCP',
+    slug: 'search-mcp',
     description:
       '联网搜索、图片与附件输入，以及 MCP 工具。需要更多信息时，让对话向外延伸。',
     tags: ['联网搜索', 'MCP 扩展'],
@@ -33,6 +37,7 @@ const capabilities = [
     icon: ImageIcon,
     title: '想法，变成画面。',
     label: 'IMAGE GENERATION',
+    slug: 'image-generation',
     description: '从文字描述到图像创作，在同一个应用里切换聊天与图像生成。',
     tags: ['图像生成', '多模态输入'],
   },
@@ -40,6 +45,7 @@ const capabilities = [
     icon: MessageSquareText,
     title: '内容，好好呈现。',
     label: 'READ & ORGANIZE',
+    slug: 'read-organize',
     description:
       'Markdown、代码和公式清晰排版。分组与管理会话，找回值得继续的那次讨论。',
     tags: ['Markdown / 公式', '会话管理'],
@@ -48,6 +54,56 @@ const capabilities = [
 
 export default function Features() {
   const { t } = useLanguage()
+
+  useEffect(() => {
+    let saved: { href: string; scrollY: number } | null = null
+    try {
+      const value = sessionStorage.getItem('everytalk-feature-return')
+      if (value) saved = JSON.parse(value) as { href: string; scrollY: number }
+    } catch {
+      saved = null
+    }
+    if (!saved) return
+    const currentHref = `${window.location.pathname}${window.location.search}${window.location.hash}`
+    if (saved.href !== currentHref) return
+
+    const frame = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: saved?.scrollY ?? 0, left: 0, behavior: 'auto' })
+        try {
+          sessionStorage.removeItem('everytalk-feature-return')
+        } catch {
+          /* 存储不可用时只恢复本次浏览位置。 */
+        }
+      })
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [])
+
+  const rememberFeatureReturn = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return
+    }
+    try {
+      sessionStorage.setItem(
+        'everytalk-feature-return',
+        JSON.stringify({
+          href: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+          scrollY: window.scrollY,
+        }),
+      )
+      sessionStorage.setItem('everytalk-feature-detail-entry', '1')
+    } catch {
+      /* 存储不可用时仍允许正常进入详情页。 */
+    }
+  }
+
   return (
     <section
       id="features"
@@ -60,8 +116,14 @@ export default function Features() {
       </div>
       <ModelConnections />
       <div className="capability-grid">
-        {capabilities.map(({ icon: Icon, title, label, description, tags }) => (
-          <article key={label} className="capability">
+        {capabilities.map(({ icon: Icon, title, label, slug, description, tags }) => (
+          <Link
+            key={label}
+            href={`/features/${slug}`}
+            className="capability"
+            onClick={rememberFeatureReturn}
+            aria-label={`${t(title)} — ${t('查看关键源码')}`}
+          >
             <div className="capability-top">
               <Icon size={24} strokeWidth={1.4} />
               <span className="mono-label">{label}</span>
@@ -74,7 +136,11 @@ export default function Features() {
                 <span key={tag}>{t(tag)}</span>
               ))}
             </div>
-          </article>
+            <span className="capability-open">
+              {t('查看关键源码')}
+              <ArrowUpRight size={14} />
+            </span>
+          </Link>
         ))}
       </div>
       <p className="capability-note">

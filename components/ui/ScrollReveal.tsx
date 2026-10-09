@@ -14,6 +14,10 @@ export default function ScrollReveal({
   className?: string
 }) {
   const host = useRef<HTMLHeadingElement>(null)
+  // 英文按词而不是逐字拆开，让手写字体在词内保留自然连接和字距。
+  const segments = /[\u4e00-\u9fff]/.test(children)
+    ? Array.from(children)
+    : (children.match(/\S+\s*|\s+/g) ?? [])
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger)
     const media = gsap.matchMedia()
@@ -24,10 +28,9 @@ export default function ScrollReveal({
         if (!words) return
         gsap.fromTo(
           words,
-          { opacity: 0.35, filter: 'blur(1.5px)', y: 10 },
+          { opacity: 0.35, y: 10 },
           {
             opacity: 1,
-            filter: 'blur(0px)',
             y: 0,
             stagger: 0.045,
             ease: 'none',
@@ -52,9 +55,9 @@ export default function ScrollReveal({
       aria-label={children}
     >
       <span aria-hidden="true">
-        {Array.from(children).map((word, index) => (
+        {segments.map((word, index) => (
           <span className="reveal-word" key={index}>
-            {word === ' ' ? '\u00a0' : word}
+            {word.replace(/ /g, '\u00a0')}
           </span>
         ))}
       </span>

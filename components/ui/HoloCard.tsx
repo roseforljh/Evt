@@ -436,7 +436,8 @@ export default function HoloCard({
     wakeRef.current = wake
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      // 光箔是装饰层，1.5 倍足够；避免高像素密度手机用四倍像素反复计算光箔。
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
       const w = Math.max(1, Math.round(canvas.clientWidth * dpr))
       const h = Math.max(1, Math.round(canvas.clientHeight * dpr))
       if (canvas.width !== w || canvas.height !== h) {

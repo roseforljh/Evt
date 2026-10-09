@@ -157,7 +157,9 @@ export default function PixelPenguin() {
     let visible = true
     let raf = 0
     let previous = 0
-    let elapsed = 0
+    // 三维原画保持固定透视，仅在颜色、尺寸或模型变化时重绘；后处理复用这张纹理。
+    let imageDirty = true
+    let settling = 0
     let lost = false
     let width = 1
     let height = 1
@@ -173,15 +175,13 @@ export default function PixelPenguin() {
       if (disposed || lost || !visible || document.hidden) return
       const dt = Math.min((now - previous) / 1000 || 0.016, 0.05)
       previous = now
-      if (!reduce) elapsed += dt
-      group.rotation.set(
-        -0.08 + (reduce ? 0 : Math.sin(elapsed * 0.6) * 0.035),
-        -0.22 + (reduce ? 0 : Math.sin(elapsed * 0.45) * 0.08),
-        -0.025,
-      )
-      // 先保留真实三维光照与透明轮廓，揭幕区域看到的是这一帧的原始三维画面。
-      renderer.setRenderTarget(imageTarget)
-      renderer.render(scene, camera)
+      group.rotation.set(-0.08, -0.22, -0.025)
+      if (imageDirty) {
+        renderer.setRenderTarget(imageTarget)
+        renderer.render(scene, camera)
+        imageDirty = false
+      }
+      settling = Math.max(0, settling - dt)
 
       presence +=
         ((pointer.inside ? 1 : 0) - presence) * (1 - Math.exp(-dt / 0.16))
@@ -235,7 +235,8 @@ export default function PixelPenguin() {
       viewUniforms.tMask.value = masks[maskIndex].texture
       renderer.setRenderTarget(null)
       renderer.render(viewScene, screenCamera)
-      if (visible && !document.hidden && !reduce)
+      // 无人操作时冻结灰白帧；笔刷停住或离开后等轨迹完全收敛再停，保留七彩揭幕和波纹。
+      if (visible && !document.hidden && !reduce && (settling > 0 || bursts.length))
         raf = requestAnimationFrame(render)
     }
     const resume = () => {
@@ -276,6 +277,7 @@ export default function PixelPenguin() {
       })
       renderer.setRenderTarget(null)
       maskIndex = 0
+      imageDirty = true
       if (!pointer.placed) {
         pointer.x = width / 2
         pointer.y = height / 2
@@ -290,15 +292,18 @@ export default function PixelPenguin() {
       pointer.placed = true
       if (!pointer.inside) pointer.fresh = true
       pointer.inside = true
+      settling = 1.4
       resume()
     }
     const leave = () => {
       pointer.inside = false
+      settling = 1.4
       resume()
     }
     const burstAt = (x: number, y: number) => {
       if (!mesh || reduce) return
       bursts.push({ x, y, start: performance.now() })
+      settling = 1.4
       if (bursts.length > MAX_BURSTS) bursts.shift()
       resume()
     }
@@ -353,6 +358,7 @@ export default function PixelPenguin() {
       mesh.instanceMatrix.needsUpdate = true
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true
       group.add(mesh)
+      imageDirty = true
       element.dataset.ready = 'true'
       setReady(true)
       resume()
@@ -372,6 +378,7 @@ export default function PixelPenguin() {
       // 灰白幕在黑底为银白，在白底为深灰；只改变幕的明暗，不给揭幕原画染色。
       viewUniforms.uPaper.value.setScalar(dark ? 1 : 0.18)
       viewUniforms.uRimColor.value.setScalar(dark ? 0.75 : 0.25)
+      imageDirty = true
       resume()
     }
     const themeObserver = new MutationObserver(updateTheme)
@@ -388,6 +395,7 @@ export default function PixelPenguin() {
       reduce = event.matches
       setReducedMotion(reduce)
       pointer.inside = false
+      settling = 1.4
       resume()
     }
     const contextLost = () => {
@@ -446,7 +454,7 @@ export default function PixelPenguin() {
           alt=""
           fill
           className="penguin-fallback brand-image"
-          sizes="(max-width: 700px) 90vw, 50vw"
+          sizes="(max-width: 700px) 128px, (max-width: 1050px) 18vw, (max-width: 1455px) 22vw, 320px"
           preload
         />
       </div>

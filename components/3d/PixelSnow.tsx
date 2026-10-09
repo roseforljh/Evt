@@ -25,7 +25,7 @@ export default function PixelSnow() {
     } catch {
       return /* WebGL 不可用时保留 CSS 静态像素背景。 */
     }
-    renderer.setPixelRatio(0.65)
+    renderer.setPixelRatio(1)
     element.appendChild(renderer.domElement)
     const scene = new THREE.Scene()
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
@@ -58,7 +58,11 @@ export default function PixelSnow() {
     let frame = 0
     let last = 0
     const resize = () => {
-      renderer.setSize(element.clientWidth, element.clientHeight)
+      const width = Math.max(1, element.clientWidth)
+      const height = Math.max(1, element.clientHeight)
+      // 像素雪无需随屏幕分辨率增长；限制到 480×320 内，避免每个全屏像素都执行光线步进。
+      const scale = Math.min(0.5, 480 / width, 320 / height)
+      renderer.setSize(Math.round(width * scale), Math.round(height * scale), false)
       renderer.getDrawingBufferSize(material.uniforms.uResolution.value)
     }
     // 30fps 足以表现慢速雪；不可见和减少动画时不保留空转 RAF。

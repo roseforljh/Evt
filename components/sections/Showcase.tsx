@@ -4,9 +4,12 @@ import { useLanguage } from '@/components/ui/LanguageProvider'
 
 import { useState } from 'react'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import ScrollExpand from '@/components/ui/ScrollExpand'
 import ScrollReveal from '@/components/ui/ScrollReveal'
 import HoloCard from '@/components/ui/HoloCard'
+import SpecularButton from '@/components/ui/SpecularButton'
+import MorphSlider from '@/components/ui/MorphSlider'
 
 const slides = [
   {
@@ -41,10 +44,14 @@ const slides = [
   },
 ]
 
+// 保持纹理列表引用稳定，切换文案、语言和主题不重新创建滑块渲染器。
+const previewItems = slides.map(slide => ({ image: slide.src.replace('.png', '.webp') }))
+
 /** 复用五张宣传图，保留切换和查看完整原图；录屏准备好后可替换展示媒体。 */
 export default function Showcase() {
   const { t } = useLanguage()
   const [active, setActive] = useState(0)
+  const reduce = useReducedMotion()
   const slide = slides[active]
   return (
     <section id="showcase" className="showcase section-space site-container">
@@ -59,31 +66,37 @@ export default function Showcase() {
         aria-label={t('选择产品展示')}
       >
         {slides.map((item, index) => (
-          <button
+          <SpecularButton
             type="button"
             key={item.src}
             aria-pressed={active === index}
             onClick={() => setActive(index)}
           >
             {t(item.label)}
-          </button>
+          </SpecularButton>
         ))}
       </div>
       <ScrollExpand>
         <div className="showcase-panel">
           <div className="showcase-copy" aria-live="polite">
-            <span className="mono-label">EVERYTALK / {t(slide.label)}</span>
-            <h3>{t(slide.title)}</h3>
-            <p>{t(slide.description)}</p>
-            <a
-              href={slide.src}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="action-quiet"
-            >
-              {t('查看完整宣传图 ')}
-              <ArrowRight size={16} />
-            </a>
+            <AnimatePresence initial={false} mode="wait">
+              <motion.div
+                key={slide.src}
+                className="showcase-story"
+                initial={reduce ? false : { opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reduce ? { opacity: 1 } : { opacity: 0, y: -8 }}
+                transition={{ duration: reduce ? 0 : 0.24, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <span className="mono-label">EVERYTALK / {t(slide.label)}</span>
+                <h3>{t(slide.title)}</h3>
+                <p>{t(slide.description)}</p>
+                <a href={slide.src} target="_blank" rel="noopener noreferrer" className="action-quiet">
+                  {t('查看完整宣传图 ')}
+                  <ArrowRight size={16} />
+                </a>
+              </motion.div>
+            </AnimatePresence>
             <div className="showcase-controls">
               <button
                 type="button"
@@ -107,20 +120,22 @@ export default function Showcase() {
             </div>
           </div>
           <div className="showcase-media">
-            <HoloCard
-              image={slide.src}
-              alt={`EveryTalk / ${t(slide.label)}`}
-              preset="glitter"
-              intensity={0.24}
-              edgeSparkle={0.65}
-              frame={2}
-              glare={0.15}
-              tiltMax={10}
-              hoverScale={1.025}
-              width={343}
-              radius={12}
-              className="showcase-holo"
-            />
+            <MorphSlider items={previewItems} active={active} onSelect={setActive} label={t('选择产品展示')}>
+              <HoloCard
+                // 展示使用压缩预览，完整宣传图链接继续保留原 PNG。
+                image={slide.src.replace('.png', '.webp')}
+                alt={`EveryTalk / ${t(slide.label)}`}
+                preset="glitter"
+                intensity={0.24}
+                edgeSparkle={0.65}
+                frame={2}
+                glare={0.15}
+                tiltMax={10}
+                hoverScale={1.025}
+                width={343}
+                radius={12}
+              />
+            </MorphSlider>
           </div>
         </div>
       </ScrollExpand>

@@ -27,8 +27,8 @@ export default function Footer() {
     {
       title: '公司',
       links: [
-        { name: '关于我们', href: '#' },
-        { name: '联系我们', href: '#' },
+        { name: '隐私政策', href: '/privacy-policy' },
+        { name: '服务条款', href: '/terms-of-service' },
       ],
     },
   ]

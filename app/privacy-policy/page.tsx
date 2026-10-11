@@ -17,7 +17,7 @@ export default function PrivacyPolicyPage() {
           <LocalizedText>隐私政策</LocalizedText>
         </h1>
         <p className="mb-10 text-gray-400">
-          <LocalizedText>生效日期：2026 年 10 月 9 日</LocalizedText>
+          <LocalizedText>生效日期：2026 年 10 月 11 日</LocalizedText>
         </p>
 
         <div className="space-y-10 leading-8 text-gray-300">
@@ -213,6 +213,69 @@ export default function PrivacyPolicyPage() {
                 保存会话凭据，退出登录会清除本地会话。
               </LocalizedText>
             </p>
+          </section>
+
+          <section>
+            <h2 className="mb-3 text-2xl font-semibold text-white">
+              <LocalizedText>Google 用户数据与 Gmail MCP</LocalizedText>
+            </h2>
+            <p className="mb-4">
+              <LocalizedText>Google 账号登录与 Gmail 连接是两个独立功能。账号登录仅使用 openid、email 和 profile 基本身份信息；只有你单独连接 Gmail 并授予 gmail.modify 权限后，Gmail MCP 才能访问邮件。当前功能包括搜索和读取邮件、列出标签、给邮件添加或移除标签，以及按你的要求发送纯文本邮件；不提供创建草稿或永久删除邮件的工具。</LocalizedText>
+            </p>
+            <p className="mb-4">
+              <LocalizedText>为完成这些功能，应用可能处理邮箱地址、邮件和会话标识符、发件人与收件人、主题、正文、邮件时间、标签、搜索条件，以及你要求发送的内容。Google 身份信息仅用于账号认证和展示；Gmail 数据仅用于你可见的邮件操作及相关回答，不用于与这些功能无关的目的。</LocalizedText>
+            </p>
+          </section>
+
+          <section>
+            <h2 className="mb-3 text-2xl font-semibold text-white">
+              <LocalizedText>处理路径与第三方 AI 服务</LocalizedText>
+            </h2>
+            <p className="mb-4">
+              <LocalizedText>Gmail 请求通过部署在 Cloudflare 的 EveryTalk OAuth/MCP Worker 与 Google Gmail API 通信。Worker 使用授权凭据换取或刷新令牌，并在请求期间处理邮件操作；其应用代码不将令牌、邮件正文或用户资料写入持久存储。Google 访问令牌和刷新令牌在 Android 端加密保存，不作为模型提示词发送。</LocalizedText>
+            </p>
+            <p className="mb-4">
+              <LocalizedText>当你使用 AI 执行 Gmail 任务时，工具返回的邮件信息可能作为会话上下文发送到当前选择的模型服务，用于理解请求、展示或总结邮件及生成相关回答。若模型经代理或聚合平台提供，网关运营方和上游模型服务商也可能处理这些内容。因此，使用 AI 邮件功能并不意味着邮件始终只在设备本地处理。</LocalizedText>
+            </p>
+            <p className="mb-4">
+              <LocalizedText>Google 数据只能在用户同意的范围内，为提供上述可见功能而传输给必要的处理方。接收 Google 数据的 AI 服务及其上游必须遵守同样的受限使用要求，不得将这些数据用于通用模型训练。EveryTalk 支持用户自定义接口，但当前不会自动核验每个接口、套餐和上游服务的训练或保存政策；未经核实符合这些要求的服务不得接收 Gmail 数据，用户同意也不能豁免禁止训练的限制。</LocalizedText>
+            </p>
+          </section>
+
+          <section>
+            <h2 className="mb-3 text-2xl font-semibold text-white">
+              <LocalizedText>受限使用承诺与禁止用途</LocalizedText>
+            </h2>
+            <p className="mb-4">
+              <LocalizedText>EveryTalk 对通过 Google API 获得的信息（包括 Gmail 原始数据及其汇总、匿名化或派生数据）的使用和向其他应用的传输，将遵守 Google API Services User Data Policy 和 Google Workspace API User Data and Developer Policy，包括 Limited Use（受限使用）要求。本节优先于本政策中一般性的第三方服务说明；第三方政策不能扩大 Google 数据的允许用途。</LocalizedText>
+            </p>
+            <p className="mb-4">
+              <LocalizedText>EveryTalk 不使用、出售或传输 Google 用户数据来创建、训练或改进基础模型或通用 AI/机器学习模型，不将其用于广告投放、再营销、数据经纪、信用评估或借贷决策。不得通过汇总、匿名化、派生摘要或用户授权规避这些限制。</LocalizedText>
+            </p>
+            <p className="mb-4">
+              <LocalizedText>维护者不得人工阅读 Google 用户数据，除非获得你对具体数据的明确同意、为必要的安全调查或遵守法律，或在 Google 政策允许的范围内使用汇总匿名数据进行内部运营。需要法律或安全目的的数据处理仅限必要范围。主动举报或寻求支持时，请仅提供你同意审核的内容，不要在公开 Issue 中上传真实邮件或凭据。</LocalizedText>
+            </p>
+            <p lang="en" className="mb-4">EveryTalk's use and transfer to any other app of information received from Google APIs will adhere to the Google API Services User Data Policy, including the Limited Use requirements.</p>
+            <p className="mb-4">
+              <a className="text-accent underline" href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>
+              {' · '}
+              <a className="text-accent underline" href="https://developers.google.com/workspace/workspace-api-user-data-developer-policy">Google Workspace API User Data and Developer Policy</a>
+            </p>
+          </section>
+
+          <section>
+            <h2 className="mb-3 text-2xl font-semibold text-white">
+              <LocalizedText>Google 数据的保存、删除与撤销授权</LocalizedText>
+            </h2>
+            <p className="mb-4">
+              <LocalizedText>Gmail 工具结果及相关回答可能保存在设备的聊天记录、Agent 执行记录或摘要中，并可能随相关会话再次提供给当前模型。可删除相关会话与关联记录；清除应用数据或卸载会移除应用私有存储中的数据。导出文件和另行保存的副本需要在各自位置删除。第三方已经收到的数据的保存期限和删除方式取决于实际服务及套餐，必须符合上述 Google 数据限制；EveryTalk 不能仅通过删除本地记录来删除第三方副本。</LocalizedText>
+            </p>
+            <p className="mb-4">
+              <LocalizedText>在应用中退出 Gmail 连接会删除本地 Gmail 授权令牌，不会自动删除此前的聊天记录，也不会删除 Google 邮箱中的邮件。还可在 Google 账号的第三方连接设置中撤销 EveryTalk 的访问权限，以阻止后续访问。普通 EveryTalk 账号退出与 Gmail 断开连接是独立操作。Google 数据隐私或删除请求可通过项目页面联系维护者，请先获取私密联系渠道，不要公开提交邮件正文、密码、验证码或令牌。</LocalizedText>
+            </p>
+            <a className="text-accent underline" href="https://myaccount.google.com/connections">
+              <LocalizedText>管理 Google 第三方连接</LocalizedText>
+            </a>
           </section>
 
           <section>
